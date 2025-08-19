@@ -1,18 +1,5 @@
 require "uri"
 
-# Custom download strategy to support private GitHub repos
-class KamiwazaDownloadStrategy < CurlDownloadStrategy
-  def curl_args(*args)
-    args = super(*args)
-    # Use standard Homebrew environment variable for GitHub authentication
-    if ENV["HOMEBREW_GITHUB_API_TOKEN"]
-      args << "--header" << "Authorization: token #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
-      args << "--header" << "Accept: application/octet-stream"
-    end
-    args
-  end
-end
-
 class Kamiwaza < Formula
   desc "Enterprise AI platform for distributed model serving and vector databases"
   homepage "https://kamiwaza.ai"
@@ -24,12 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "0151f19c4a925ebd352dce905096dcd381124f4811e993f42a31bcfcd7276926"
+    sha256 "f6eefafcf81d948302094cf7425b3eea67e945340f38547b4169236ffe22a83d"
   else
     # Production URL from GitHub releases
-    url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz",
-        using: KamiwazaDownloadStrategy
-    sha256 "0151f19c4a925ebd352dce905096dcd381124f4811e993f42a31bcfcd7276926"  # This will be updated by the build process
+    url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
+    sha256 "f6eefafcf81d948302094cf7425b3eea67e945340f38547b4169236ffe22a83d"  # This will be updated by the build process
   end
   
   license "Proprietary"
@@ -124,10 +110,10 @@ class Kamiwaza < Formula
     env_override_file.write(env_overrides.join("\n"))
     
     # User notification about telemetry
-    if telemetry_opt_in
+    if telemetry_enabled
       ohai "Telemetry is enabled. Thank you for helping improve Kamiwaza!"
     else
-      opoo "Telemetry is disabled by default. To opt in, reinstall with:"
+      opoo "Telemetry is disabled. To opt in, reinstall with:"
       opoo "  HOMEBREW_KAMIWAZA_TELEMETRY=true brew reinstall kamiwaza"
     end
     
