@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "89c2312bc9a22c1d9ae4838eaa19705e23b4e75880ff58a4233af535a72d8d49"
+    sha256 "3e9e1a5001cdf196ad156fc325a4b63bb63d3f802c86c4cccb3ed59e7e971ab2"
   else
-    # Production URL from GitHub releases
-    url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
+    # Production URL from CDN
+    url "https://releases.kamiwaza.ai/kamiwaza-#{version}-macos.tar.gz"
+    sha256 "3e9e1a5001cdf196ad156fc325a4b63bb63d3f802c86c4cccb3ed59e7e971ab2"  # This will be updated by the build process
   end
   
   license "Proprietary"
@@ -36,9 +36,9 @@ class Kamiwaza < Formula
     # Read environment variable (macOS only supports KAMIWAZA_LITE)
     lite_mode = ENV["HOMEBREW_KAMIWAZA_LITE"] || "true"
     
-    # Telemetry configuration (idiomatic Homebrew approach)
-    # Default: telemetry is opted-out unless user explicitly opts in
-    telemetry_opt_in = ENV["HOMEBREW_KAMIWAZA_TELEMETRY"] == "true"
+    # Telemetry configuration
+    # Default: telemetry is enabled unless user explicitly opts out
+    telemetry_enabled = ENV["HOMEBREW_KAMIWAZA_TELEMETRY"] != "false"
     analytics_url = ENV["KAMIWAZA_ANALYTICS_URL"] || "https://kamiwaza-ops-stage-kamiwaza-telemetry-api-326262112557.us-central1.run.app/v1/events"
     
     # License key configuration
@@ -92,10 +92,13 @@ class Kamiwaza < Formula
     
     # Telemetry settings
     env_overrides << "KAMIWAZA_ANALYTICS_URL=#{analytics_url}"
-    # Set TELEMETRY_OPT_OUT_OVERRIDE based on user preference
-    # Note: The app expects "true" to mean opted OUT, "false" to mean opted IN
-    telemetry_override = telemetry_opt_in ? "false" : "true"
-    env_overrides << "TELEMETRY_OPT_OUT_OVERRIDE=#{telemetry_override}"
+    
+    # Bridge Homebrew telemetry preference to app's expected variable
+    if telemetry_enabled
+      env_overrides << "TELEMETRY_OPT_OUT_OVERRIDE=false"
+    else
+      env_overrides << "TELEMETRY_OPT_OUT_OVERRIDE=true"
+    end
     
     # License key setting
     if license_key != "COMMUNITY-EDITION-ONLY"
@@ -368,15 +371,11 @@ class Kamiwaza < Formula
       
       #{Formatter.headline("Telemetry")}
       
-      Kamiwaza collects anonymous usage data to help improve the product.
-      Telemetry is DISABLED by default for privacy.
+      Kamiwaza collects anonymous usage data to help us improve the product and provide better support.
+      Telemetry is enabled by default on macOS installations.
       
-      To opt in to telemetry:
-        HOMEBREW_KAMIWAZA_TELEMETRY=true brew reinstall kamiwaza
-      
-      You can also control telemetry after installation by setting:
-        export TELEMETRY_OPT_OUT_OVERRIDE=false  # Enable telemetry
-        export TELEMETRY_OPT_OUT_OVERRIDE=true   # Disable telemetry
+      To opt out of telemetry during installation:
+        HOMEBREW_KAMIWAZA_TELEMETRY=false brew install kamiwaza
       
       #{Formatter.headline("Post-Installation")}
       
