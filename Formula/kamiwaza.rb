@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "f6eefafcf81d948302094cf7425b3eea67e945340f38547b4169236ffe22a83d"
+    sha256 "933ed107ae4c6d06d547622bd59f81d2ee75f3f20099b685ed2a05608bc593e5"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "f6eefafcf81d948302094cf7425b3eea67e945340f38547b4169236ffe22a83d"  # This will be updated by the build process
+    sha256 "933ed107ae4c6d06d547622bd59f81d2ee75f3f20099b685ed2a05608bc593e5"  # This will be updated by the build process
   end
   
   license "Proprietary"
@@ -337,59 +337,42 @@ class Kamiwaza < Formula
   end
 
   def caveats
-    installation_type = ENV["HOMEBREW_KAMIWAZA_LOCAL_BUILD"] ? "(Local Build)" : ""
+    # Determine what was actually installed
+    installation_mode = ENV["HOMEBREW_KAMIWAZA_LITE"] == "false" ? "Full" : "Lite"
+    telemetry_status = ENV["HOMEBREW_KAMIWAZA_TELEMETRY"] == "false" ? "disabled" : "enabled"
+    license_type = ENV["HOMEBREW_KAMIWAZA_LICENSE_KEY"] && 
+                   ENV["HOMEBREW_KAMIWAZA_LICENSE_KEY"] != "COMMUNITY-EDITION-ONLY" ? 
+                   "Enterprise" : "Community"
     
     <<~EOS
-      #{Formatter.headline("Kamiwaza Community Edition License Agreement")} #{installation_type}
+      #{Formatter.headline("Installation Summary")}
       
-      By installing Kamiwaza, you are accepting the Kamiwaza Community Edition
-      End User License Agreement. The full EULA can be found at:
-        #{libexec}/LICENSE-kamiwaza
+      Kamiwaza #{license_type} Edition (#{installation_mode} mode)
+      Telemetry: #{telemetry_status}
       
-      After installation, you can also view it with:
-        cat #{HOMEBREW_PREFIX}/opt/kamiwaza/libexec/LICENSE-kamiwaza
-      
-      #{Formatter.headline("Installation Configuration")}
-      
-      This is the Kamiwaza Community Edition for macOS. You can configure:
-      
-      • Installation mode:
-        - Lite mode (default): Minimal installation for testing
-        - Full mode: Complete installation with all backends
-        
-        Set via environment variable during install:
-          KAMIWAZA_LITE=false brew install kamiwaza
-      
-      Configuration will be created in: #{libexec}/env.sh
-      
-      #{Formatter.headline("License Key")}
-      
-      To install with a license key:
-        HOMEBREW_KAMIWAZA_LICENSE_KEY=your-key brew install kamiwaza
-      
-      For Community Edition, no license key is required.
-      
-      #{Formatter.headline("Telemetry")}
-      
-      Kamiwaza collects anonymous usage data to help us improve the product and provide better support.
-      Telemetry is enabled by default on macOS installations.
-      
-      To opt out of telemetry during installation:
-        HOMEBREW_KAMIWAZA_TELEMETRY=false brew install kamiwaza
-      
-      #{Formatter.headline("Post-Installation")}
-      
-      Installation includes compilation of frontend and llama.cpp dependency.
-      This takes 3-5 minutes but happens during main installation (not post-install).
+      #{Formatter.headline("Getting Started")}
       
       To start Kamiwaza:
+        kamiwaza start
+      
+      To enable auto-start at login (optional):
         brew services start kamiwaza
       
       To check status:
         kamiwaza status
       
-      View logs at:
-        #{var}/log/kamiwaza/kamiwaza.log
+      #{Formatter.headline("Access Points")}
+      
+      Web Interface: https://localhost
+      API Documentation: http://localhost:7777/docs
+      
+      Default credentials:
+        Username: admin
+        Password: kamiwaza
+      
+      #{Formatter.headline("Logs")}
+      
+      View logs at: #{var}/log/kamiwaza/kamiwaza.log
     EOS
   end
 
