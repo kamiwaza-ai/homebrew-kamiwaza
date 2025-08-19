@@ -9,7 +9,7 @@ class Kamiwaza < Formula
   if ENV["HOMEBREW_KAMIWAZA_LOCAL_BUILD"]
     # Local filesystem URL for testing production builds
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
-    url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
+    url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
     sha256 "89c2312bc9a22c1d9ae4838eaa19705e23b4e75880ff58a4233af535a72d8d49"
   else
