@@ -4,8 +4,10 @@ require "uri"
 class KamiwazaDownloadStrategy < CurlDownloadStrategy
   def curl_args
     args = super
-    if ENV["GITHUB_TOKEN"]
-      args << "--header" << "Authorization: token #{ENV["GITHUB_TOKEN"]}"
+    # Use standard Homebrew environment variable for GitHub authentication
+    if ENV["HOMEBREW_GITHUB_API_TOKEN"]
+      args << "--header" << "Authorization: token #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
+      args << "--header" << "Accept: application/octet-stream"
     end
     args
   end
@@ -22,12 +24,12 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "019816117f21a636a04628e4470e958c298111faea3e4b2f8ddeacbcebae549c"
+    sha256 "0f0d78efe840c4647f0a2eb07d5b5cf3c32be8aa205a006f25b13737cfa5838a"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz",
         using: KamiwazaDownloadStrategy
-    sha256 "019816117f21a636a04628e4470e958c298111faea3e4b2f8ddeacbcebae549c"  # This will be updated by the build process
+    sha256 "0f0d78efe840c4647f0a2eb07d5b5cf3c32be8aa205a006f25b13737cfa5838a"  # This will be updated by the build process
   end
   
   license "Proprietary"
