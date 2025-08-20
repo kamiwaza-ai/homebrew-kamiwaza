@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "933ed107ae4c6d06d547622bd59f81d2ee75f3f20099b685ed2a05608bc593e5"
+    sha256 "0447df7a14b34fc405632eba6fed5bc84b4bef30f97e24c88c391d8d4100c026"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "933ed107ae4c6d06d547622bd59f81d2ee75f3f20099b685ed2a05608bc593e5"  # This will be updated by the build process
+    sha256 "0447df7a14b34fc405632eba6fed5bc84b4bef30f97e24c88c391d8d4100c026"  # This will be updated by the build process
   end
   
   license "Proprietary"
@@ -194,8 +194,8 @@ class Kamiwaza < Formula
       export KAMIWAZA_LOG_DIR="#{var}/log/kamiwaza"
       export PATH="#{venv}/bin:$PATH"
       
-      # Execute the startup script
-      exec "#{libexec}/startup/kamiwazad.sh" "$@"
+      # Execute the startup script and replace references in output
+      "#{libexec}/startup/kamiwazad.sh" "$@" 2>&1 | sed 's/kamiwazad\\.sh/kamiwaza/g'
     EOS
     
     chmod 0755, bin/"kamiwaza"
@@ -325,17 +325,6 @@ class Kamiwaza < Formula
     end
   end
 
-  service do
-    run [opt_bin/"kamiwaza", "start"]
-    working_dir var/"kamiwaza"
-    keep_alive true
-    log_path var/"log/kamiwaza/kamiwaza.log"
-    error_log_path var/"log/kamiwaza/kamiwaza.error.log"
-    environment_variables KAMIWAZA_ROOT: opt_libexec,
-                         KAMIWAZA_LOG_DIR: var/"log/kamiwaza",
-                         PATH: "#{opt_libexec}/venv/bin:#{ENV["PATH"]}"
-  end
-
   def caveats
     # Determine what was actually installed
     installation_mode = ENV["HOMEBREW_KAMIWAZA_LITE"] == "false" ? "Full" : "Lite"
@@ -387,7 +376,12 @@ class Kamiwaza < Formula
     # Run the uninstall cleanup script if available
     if File.exist?(pkgshare/"uninstall-cleanup.sh")
       ohai "Running Kamiwaza uninstall cleanup..."
-      system "bash", pkgshare/"uninstall-cleanup.sh"
+      success = system "bash", pkgshare/"uninstall-cleanup.sh"
+      unless success
+        opoo "Uninstall cleanup script reported warnings or errors (exit code: #{$?.exitstatus})"
+        opoo "Some resources may not have been fully cleaned. You can manually run:"
+        opoo "  bash #{pkgshare}/uninstall-cleanup.sh"
+      end
     else
       # Fallback to basic cleanup if script not found
       opoo "Uninstall cleanup script not found, performing basic cleanup..."
@@ -397,9 +391,10 @@ class Kamiwaza < Formula
         system "brew", "services", "stop", name rescue nil
       end
       
-      # Stop Kamiwaza processes gracefully
-      if File.exist?(opt_bin/"kamiwaza")
-        system opt_bin/"kamiwaza", "stop" rescue nil
+      # Stop Kamiwaza processes gracefully (use bin instead of opt_bin for safety)
+      kamiwaza_bin = bin/"kamiwaza"
+      if kamiwaza_bin.exist?
+        system kamiwaza_bin, "stop" rescue nil
       end
       
       # Wait for graceful shutdown
