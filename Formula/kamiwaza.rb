@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "0447df7a14b34fc405632eba6fed5bc84b4bef30f97e24c88c391d8d4100c026"
+    sha256 "ebbea598747b651ba4a1d6dedfd387682885b893b320562d945e2f016f0a79cb"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "0447df7a14b34fc405632eba6fed5bc84b4bef30f97e24c88c391d8d4100c026"  # This will be updated by the build process
+    sha256 "ebbea598747b651ba4a1d6dedfd387682885b893b320562d945e2f016f0a79cb"  # This will be updated by the build process
   end
   
   license "Proprietary"
@@ -334,23 +334,15 @@ class Kamiwaza < Formula
                    "Enterprise" : "Community"
     
     <<~EOS
+      #{Formatter.headline("License")}
+      
+      By using Kamiwaza, you agree to the Kamiwaza End User License Agreement.
+      View the full license at: https://kamiwaza.ai/license
+      
       #{Formatter.headline("Installation Summary")}
       
       Kamiwaza #{license_type} Edition (#{installation_mode} mode)
       Telemetry: #{telemetry_status}
-      
-      #{Formatter.headline("Getting Started")}
-      
-      To start Kamiwaza:
-        kamiwaza start
-      
-      To enable auto-start at login (optional):
-        brew services start kamiwaza
-      
-      To check status:
-        kamiwaza status
-      
-      #{Formatter.headline("Access Points")}
       
       Web Interface: https://localhost
       API Documentation: http://localhost:7777/docs
@@ -359,9 +351,18 @@ class Kamiwaza < Formula
         Username: admin
         Password: kamiwaza
       
-      #{Formatter.headline("Logs")}
+      Logs: #{var}/log/kamiwaza/kamiwaza.log
       
-      View logs at: #{var}/log/kamiwaza/kamiwaza.log
+      #{Formatter.headline("Getting Started")}
+      
+      To start Kamiwaza:
+        kamiwaza start
+      
+      To check status:
+        kamiwaza status
+      
+      To stop Kamiwaza:
+        kamiwaza stop
     EOS
   end
 
