@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "42aa3d2859c75320d10398f80e8a417fff0b8e6fb331525edaf5225d3b73e317"
+    sha256 "78b786ffe75c12f8435d085a70f2d6a4858cd5266aa93d70bbf91ff39c3ab899"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "42aa3d2859c75320d10398f80e8a417fff0b8e6fb331525edaf5225d3b73e317"  # This will be updated by the build process
+    sha256 "78b786ffe75c12f8435d085a70f2d6a4858cd5266aa93d70bbf91ff39c3ab899"  # This will be updated by the build process
   end
   
   license "Proprietary"
@@ -363,57 +363,23 @@ class Kamiwaza < Formula
       
       To stop Kamiwaza:
         kamiwaza stop
+      
+      #{Formatter.headline("Before Uninstalling")}
+      
+      IMPORTANT: Before uninstalling Kamiwaza, you should:
+      
+      1. Stop the brew service (if enabled):
+         brew services stop kamiwaza-ai/kamiwaza/kamiwaza
+      
+      2. Run the cleanup script to stop all services and clean up resources:
+         bash #{HOMEBREW_PREFIX}/opt/kamiwaza/share/kamiwaza/uninstall-cleanup.sh
+      
+      This will stop all Kamiwaza processes, Docker containers, and clean up
+      temporary files. Logs are saved to /tmp/kamiwaza-uninstall-*.log
+      
+      3. Then uninstall:
+         brew uninstall kamiwaza
     EOS
-  end
-
-  def pre_uninstall
-    # Remove setup completion marker to allow fresh setup on reinstall
-    setup_marker = libexec/".kamiwaza_setup_complete"
-    if setup_marker.exist?
-      ohai "Removing setup completion marker"
-      setup_marker.unlink
-    end
-    
-    # Run the uninstall cleanup script if available
-    if File.exist?(pkgshare/"uninstall-cleanup.sh")
-      ohai "Running Kamiwaza uninstall cleanup..."
-      success = system "bash", pkgshare/"uninstall-cleanup.sh"
-      unless success
-        opoo "Uninstall cleanup script reported warnings or errors (exit code: #{$?.exitstatus})"
-        opoo "Some resources may not have been fully cleaned. You can manually run:"
-        opoo "  bash #{pkgshare}/uninstall-cleanup.sh"
-      end
-    else
-      # Fallback to basic cleanup if script not found
-      opoo "Uninstall cleanup script not found, performing basic cleanup..."
-      
-      # Stop brew services if running
-      if File.exist?(HOMEBREW_PREFIX/"var/homebrew.mxcl.#{name}.plist")
-        system "brew", "services", "stop", name rescue nil
-      end
-      
-      # Stop Kamiwaza processes gracefully (use bin instead of opt_bin for safety)
-      kamiwaza_bin = bin/"kamiwaza"
-      if kamiwaza_bin.exist?
-        system kamiwaza_bin, "stop" rescue nil
-      end
-      
-      # Wait for graceful shutdown
-      sleep 5
-      
-      # Kill any remaining processes
-      system "pkill", "-f", "kamiwaza" rescue nil
-      system "pkill", "-f", "mlx-server" rescue nil
-      
-      # Stop Ray if it's running
-      system "ray", "stop", "--force" rescue nil
-      
-      # Clean up PM2 processes if PM2 is available
-      if system("which", "pm2", out: File::NULL, err: File::NULL)
-        system "pm2", "stop", "kamiwaza-frontend" rescue nil
-        system "pm2", "delete", "kamiwaza-frontend" rescue nil
-      end
-    end
   end
 
   service do
