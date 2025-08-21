@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "78b786ffe75c12f8435d085a70f2d6a4858cd5266aa93d70bbf91ff39c3ab899"
+    sha256 "467f2a9990c41175687d8a40061dd6e05c1582fc6aa3119d5c5c23a4eef6b7d1"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "78b786ffe75c12f8435d085a70f2d6a4858cd5266aa93d70bbf91ff39c3ab899"  # This will be updated by the build process
+    sha256 "467f2a9990c41175687d8a40061dd6e05c1582fc6aa3119d5c5c23a4eef6b7d1"  # This will be updated by the build process
   end
   
   license "Proprietary"
@@ -29,6 +29,9 @@ class Kamiwaza < Formula
   depends_on "etcd"
   depends_on "jq"
   depends_on "llama.cpp"
+  depends_on "git"
+  depends_on "curl"
+  depends_on "coreutils"
   # Note: Docker Desktop should be installed separately:
   # depends_on cask: "docker"
 
@@ -390,7 +393,7 @@ class Kamiwaza < Formula
     environment_variables KAMIWAZA_ROOT: opt_libexec,
                          KAMIWAZA_VENV: opt_libexec/"venv",
                          KAMIWAZA_LOG_DIR: var/"log/kamiwaza",
-                         PATH: "#{opt_libexec}/venv/bin:#{ENV["PATH"]}",
+                         PATH: "#{opt_libexec}/venv/bin:#{Formula["node@22"].opt_bin}:#{Formula["curl"].opt_bin}:#{std_service_path_env}",
                          KAMIWAZA_ANALYTICS_URL: ENV["KAMIWAZA_ANALYTICS_URL"] || "https://kamiwaza-ops-stage-kamiwaza-telemetry-api-326262112557.us-central1.run.app/v1/events"
   end
 
