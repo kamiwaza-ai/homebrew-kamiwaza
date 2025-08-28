@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "a00268baf16f323c97565c759a6bb10908134ded68d84617b0f8196b886a9f6c"
+    sha256 "59b0c407d85697b0e46fd28cb78f881b26b487ba4b0deabfff1cf29e45d332a0"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "a00268baf16f323c97565c759a6bb10908134ded68d84617b0f8196b886a9f6c"  # This will be updated by the build process
+    sha256 "59b0c407d85697b0e46fd28cb78f881b26b487ba4b0deabfff1cf29e45d332a0"  # This will be updated by the build process
   end
   
   license "Proprietary"
@@ -224,6 +224,21 @@ class Kamiwaza < Formula
       end
     else
       opoo "Kamiwaza wheel not found - Python module may not be available"
+    end
+    
+    # Create env.sh with KAMIWAZA_LLAMACPP_PATH if it doesn't exist
+    (etc/"kamiwaza").mkpath
+    unless File.exist?(etc/"kamiwaza/env.sh")
+      ohai "Creating env.sh with Homebrew llama.cpp configuration..."
+      env_content = File.read(libexec/"env.sh.example")
+      
+      # Add KAMIWAZA_LLAMACPP_PATH pointing to Homebrew's llama.cpp
+      if Formula["llama.cpp"].opt_bin.exist?
+        env_content += "\n# Homebrew llama.cpp location\n"
+        env_content += "export KAMIWAZA_LLAMACPP_PATH=\"#{Formula["llama.cpp"].opt_bin}\"\n"
+      end
+      
+      File.write(etc/"kamiwaza/env.sh", env_content)
     end
     
     # Run first-boot.sh to handle JWT keys, database setup, and env.sh creation
