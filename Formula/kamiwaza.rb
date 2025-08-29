@@ -3,7 +3,7 @@ require "uri"
 class Kamiwaza < Formula
   desc "Enterprise AI platform for distributed model serving and vector databases"
   homepage "https://kamiwaza.ai"
-  version "0.5.0"
+  version "0.7.0-dev2"
   
   # Dynamic URL selection based on environment variable
   if ENV["HOMEBREW_KAMIWAZA_LOCAL_BUILD"]
@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "488cb7eca665f3a6dd3deaf1bc3d1a6a271a608848205130d1191855ede03745"
+    sha256 "493cde0467d2a28497b72f3e61a18b00eb426719453316f7d21b016293dceab0"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "488cb7eca665f3a6dd3deaf1bc3d1a6a271a608848205130d1191855ede03745"  # This will be updated by the build process
+    sha256 "493cde0467d2a28497b72f3e61a18b00eb426719453316f7d21b016293dceab0"  # This will be updated by the build process
   end
   
   license "Proprietary"
