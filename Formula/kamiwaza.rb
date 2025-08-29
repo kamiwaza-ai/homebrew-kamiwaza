@@ -11,11 +11,11 @@ class Kamiwaza < Formula
     package_dir = ENV["HOMEBREW_KAMIWAZA_PACKAGE_DIR"] || Dir.pwd
     url "file://#{package_dir}/kamiwaza-#{version}-macos.tar.gz"
     # Use actual SHA256 for local builds to avoid verification issues
-    sha256 "bb0e35b4e7febd814db164d1cc14a6443f3b6473ded8d672c99ab9da2020e74f"
+    sha256 "0b78d773ba194601e74a2836b6f44b30e7778739adacaf68f03632b096266d35"
   else
     # Production URL from GitHub releases
     url "https://github.com/kamiwaza-ai/homebrew-kamiwaza/releases/download/v#{version}/kamiwaza-#{version}-macos.tar.gz"
-    sha256 "bb0e35b4e7febd814db164d1cc14a6443f3b6473ded8d672c99ab9da2020e74f"  # This will be updated by the build process
+    sha256 "0b78d773ba194601e74a2836b6f44b30e7778739adacaf68f03632b096266d35"  # This will be updated by the build process
   end
   
   license "Proprietary"
